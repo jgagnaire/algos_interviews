@@ -1,0 +1,9 @@
+
+1 - a node is either red or black
+2 - the root is always black
+3 - the leaves are always black
+4 - a red node always has two black children
+5 - from a given node, any path to any of its descendant leaves contains the same number of black nodes
+
+the maximal height for a red black tree with N internal nodes is 2 log (N + 1)
+
