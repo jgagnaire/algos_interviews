@@ -29,5 +29,5 @@ void	permutations(char *input, int start, int length)
 
 int main()
 {
-  permutations("abc", 0, 3);
+  permutations(strdup("abc"), 0, 3);
 }

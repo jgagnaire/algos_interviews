@@ -1,28 +1,23 @@
 
 #include <stdio.h>
+#include <stdint.h>
 
-unsigned char rev_bits(unsigned char x)
+uint64_t func(uint64_t x)
 {
-  unsigned char rslt = x;
-  char s = sizeof(char) * 8 - 1; 
+  int i = 0;
+  uint64_t y = 0;
 
-  x >>= 1;
-  while (x)
+  while (i < 64)
     {
-      rslt <<= 1;
-      rslt |= x & 1; 
-      --s;
-      x >>= 1;
+      y = y | (((x >> (63 - i)) & 1) << i);
+      ++i;
     }
-  rslt <<= s;
-  return rslt;
+  return y;
 }
 
-int
-main(int a, char **b){
+int main()
+{
+  uint64_t x = 42;
 
-  if (a < 2)
-    return 0;
-
-  printf("%d -- %d\n", (unsigned char)atoi(b[1]), rev_bits(rev_bits(atoi(b[1]))));
+  return printf("before: %lu -- after: %lu\n", x, func(x));
 }
