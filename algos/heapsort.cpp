@@ -1,4 +1,6 @@
 
+#include <vector>
+
 void swap(int *a, int *b)
 {
   int tmp = *a;
@@ -6,32 +8,30 @@ void swap(int *a, int *b)
   *b = tmp;
 }
 
-void heapify(int *tab, int i, int n)
+void heapify(std::vector<int> &tab, int i, int n)
 {
   int largest = i;
   int left_child = 2 * i + 1;
   int right_child = 2 * i + 2;
 
-  if (left_child < n && tab[largest] < tab[left_child])
+  if (left_child < n && tab[left_child] > tab[largest])
     largest = left_child;
-  if (right_child < n && tab[largest] < tab[right_child])
+  if (right_child < n && tab[right_child] > tab[largest])
     largest = right_child;
 
   if (largest != i)
     {
-      swap(&tab[i], &tab[largest]);
+      swap(&tab[largest], &tab[i]);
       heapify(tab, largest, n);
     }
 }
 
-void heapsort(int *tab, int n)
+void heapsort(std::vector<int> &tab)
 {
-  //build a max heap
-  for (int i = n / 2 - 1; i >= 0; --i)
-    heapify(tab, i, n);
+  for (int i = tab.size() / 2 - 1; i >= 0; --i)
+    heapify(tab, i, tab.size());
 
-  // take out the max elem from the heap
-  for (int i = n - 1; i >= 0; --i)
+  for (int i = tab.size() - 1; i > 0; --i)
     {
       swap(&tab[0], &tab[i]);
       heapify(tab, 0, i);
@@ -45,14 +45,14 @@ void heapsort(int *tab, int n)
 
 int main(void)
 {
-  int tab[LEN];
+  std::vector<int> tab(LEN);
 
   srand(time(0));
   for (int a = 0; a < LEN; ++a)
     std::cout << (tab[a] = rand() % LEN) << " ";
   std::cout << std::endl;
 
-  heapsort(tab, LEN);
+  heapsort(tab);
 
   for (int a = 0; a < LEN; ++a)
     std::cout << tab[a] << " ";
