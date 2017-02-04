@@ -25,7 +25,7 @@ unsigned long calc_text_hash(unsigned long text_hvalue, std::string const &text,
   return text_hvalue;
 }
 
-bool is_substring(std::string pattern, std::string text)
+int is_substring(std::string pattern, std::string text)
 {
   unsigned long pattern_hvalue = hash(pattern);
   unsigned long text_hvalue;
@@ -34,9 +34,9 @@ bool is_substring(std::string pattern, std::string text)
     {
       text_hvalue = calc_text_hash(text_hvalue, text, a, pattern.size());
       if (text_hvalue == pattern_hvalue && text.substr(a, pattern.size()) == pattern)
-	return true;
+	return a;
     }
-  return false;
+  return -1;
 }
 
 int main(int ac, char **av)
