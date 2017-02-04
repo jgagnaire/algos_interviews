@@ -1,29 +1,22 @@
 
-#ifndef		YOURGONNAFAILANYWAYLOL
-# define	YOURGONNAFAILANYWAYLOL
+#ifndef		ULLFAILANYWAYLOL
+# define	ULLFAILANYWAYLOL
 
-# include	<unistd.h>
-# include	<stdlib.h>
-# include	<string.h>
-# include	<stdio.h>
+struct tree
+{
+  int data;
+  bool already_visited;
+  tree *right;
+  tree *left;
+};
 
-typedef struct tree tree;
-typedef struct list list;
+struct list
+{
+  int data;
+  list *next;
+};
+
 typedef list queue;
 typedef list stack;
-
-struct  tree
-{
-  char  *data;
-  tree  *left;
-  tree  *right;
-  char  flag;
-};
-
-struct  list
-{
-  tree  *ptr;
-  list  *next;
-};
 
 #endif

@@ -14,14 +14,14 @@ void heapify(std::vector<int> &tab, int i, int n)
   int left_child = 2 * i + 1;
   int right_child = 2 * i + 2;
 
-  if (left_child < n && tab[left_child] > tab[largest])
+  if (left_child < n && tab[largest] < tab[left_child])
     largest = left_child;
-  if (right_child < n && tab[right_child] > tab[largest])
+  if (right_child < n && tab[largest] < tab[right_child])
     largest = right_child;
 
   if (largest != i)
     {
-      swap(&tab[largest], &tab[i]);
+      swap(&tab[i], &tab[largest]);
       heapify(tab, largest, n);
     }
 }
