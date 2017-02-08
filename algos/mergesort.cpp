@@ -2,7 +2,6 @@
 void merge(int *tab, int left, int middle, int right)
 {
   int a, b, c;
-
   int len1 = middle - left + 1;
   int len2 = right - middle;
 
@@ -21,18 +20,17 @@ void merge(int *tab, int left, int middle, int right)
   while (a < len1 && b < len2)
     {
       if (tab1[a] <= tab2[b])
-        {
+	{
 	  tab[c] = tab1[a];
 	  ++a;
-        }
+	}
       else
-        {
+	{
 	  tab[c] = tab2[b];
 	  ++b;
-        }
+	}
       ++c;
     }
-    
   while (a < len1)
     {
       tab[c] = tab1[a];
@@ -51,7 +49,6 @@ void mergesort(int *tab, int left, int right)
 {
   if (left < right)
     {
-      // and not (right + left) / 2, to avoid overflow
       int middle = left + (right - left) / 2;
 
       mergesort(tab, left, middle);

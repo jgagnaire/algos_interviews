@@ -21,20 +21,20 @@ void heapify(std::vector<int> &tab, int i, int n)
 
   if (largest != i)
     {
-      swap(&tab[i], &tab[largest]);
+      swap(&tab[largest], &tab[i]);
       heapify(tab, largest, n);
     }
 }
 
 void heapsort(std::vector<int> &tab)
 {
-  for (int i = tab.size() / 2 - 1; i >= 0; --i)
-    heapify(tab, i, tab.size());
+  for (int a = tab.size() / 2 - 1; a >= 0; --a)
+    heapify(tab, a, tab.size());
 
-  for (int i = tab.size() - 1; i > 0; --i)
+  for (int a = tab.size() - 1; a > 0; --a)
     {
-      swap(&tab[0], &tab[i]);
-      heapify(tab, 0, i);
+      swap(&tab[0], &tab[a]);
+      heapify(tab, 0, a);
     }
 }
 
