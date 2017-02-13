@@ -25,50 +25,167 @@ public:
   void buildEdge(int vertex1, int vertex2, int weight)
   {
     adj[vertex1].push_back(std::make_pair(vertex2, weight));
+    // comment next line if a DAG is desired
     adj[vertex2].push_back(std::make_pair(vertex1, weight));
+  }
+
+  void dijkstra(int start = 0, int target = -1)
+  {
+    std::priority_queue<std::pair<unsigned, int>,
+			std::vector<std::pair<unsigned, int> >,
+			std::greater<std::pair<unsigned, int> > > pq;
+
+    unsigned *dist = new unsigned[vertices_nb];
+    int *parent = new int[vertices_nb];
+
+    dist[start] = 0;
+
+    for (int a = 0; a < vertices_nb; ++a)
+      {
+	if (a != start)
+	  dist[a] = -1;
+	parent[a] = -1;
+	pq.push(std::make_pair(dist[a], a));
+      }
+    while (!pq.empty())
+      {
+	std::pair<unsigned, int> current = pq.top();
+	if (current.second == target)
+	  break ;
+	pq.pop();
+
+	for (std::pair<int, int> e : adj[current.second])
+	  {
+	    int weight = e.second;
+	    if (dist[e.first] > dist[current.second] + weight)
+	      {
+		dist[e.first] = dist[current.second] + weight;
+		parent[e.first] = current.second;
+		pq.push(std::make_pair(dist[e.first], e.first));
+	      }
+	  }
+      }
+
+    // print results
+    std::stack<int> s;
+
+    if (target == -1)
+      {
+	std::cout << "Node\tDistance\t\tPath" << std::endl;
+	for (int a = 0; a < vertices_nb; ++a)
+	  {
+	    std::cout << a << "\t" << dist[a] << "\t\t";
+	    for (int j = a; parent[j] != -1; j = parent[j])
+	      s.push(parent[j]);
+	    while (!s.empty())
+	      {
+		std::cout << s.top() << " ";
+		s.pop();
+	      }
+	    std::cout << std::endl;
+	  }
+      }
+    else
+      {
+	std::cout << target << "\t" << dist[target] << "\t\t";
+	while (parent[target] != -1)
+	  {
+	    s.push(parent[target]);
+	    target = parent[target];
+	  }
+	while (!s.empty())
+	  {
+	    std::cout << s.top() << " ";
+	    s.pop();
+	  }
+      }
+
+    std::cout << std::endl;
+    delete[] dist;
+    delete[] parent;
+  }
+
+  void topological_sort_it()
+  {
+    std::vector<int> inc_edges(vertices_nb, 0);
+    std::stack<int> no_inc_edges;
+    std::queue<int> q;
+
+    for (int a = 0; a < vertices_nb; ++a)
+      for (std::pair<int, int> e : adj[a])
+	++inc_edges[e.first];
+
+    for (int a = 0; a < vertices_nb; ++a)
+      if (!inc_edges[a])
+	no_inc_edges.push(a);
+
+    while (!no_inc_edges.empty())
+      sub_topological_sort_it(no_inc_edges, inc_edges, q);
+  
+    while (!q.empty())
+      {
+	std::cout << q.front() << " ";
+	q.pop();
+      }
+    std::cout << std::endl;
+  }
+
+  void sub_topological_sort_it(std::stack<int> &no_inc_edges,
+			       std::vector<int> &inc_edges,
+			       std::queue<int> &q)
+  {
+    int current = no_inc_edges.top();
+    no_inc_edges.pop();
+    q.push(current);
+
+    for (std::pair<int, int> e : adj[current])
+      if (!--inc_edges[e.first])
+	no_inc_edges.push(e.first);
+  }
+
+  void topological_sort_rec()
+  {
+    bool *visited = new bool[vertices_nb];
+    std::stack<int> s;
+
+    for (int a = 0; a < vertices_nb; ++a)
+      visited[a] = false;
+
+    for (int a = 0; a < vertices_nb; ++a)
+      if (!visited[a])
+	sub_topological_sort_rec(a, visited, s);
+
+    while (!s.empty())
+      {
+	std::cout << s.top() << " ";
+	s.pop();
+      }
+    std::cout << std::endl;
+    delete[] visited;
+  }
+
+  void sub_topological_sort_rec(int elem, bool *visited, std::stack<int> &s)
+  {
+    visited[elem] = true;
+
+    for (std::pair<int, int> e : adj[elem])
+      {
+	if (!visited[e.first])
+	  sub_topological_sort_rec(e.first, visited, s);
+      }
+    s.push(elem);
   }
 
   void bfs()
   {
-    bool visited[vertices_nb];
-    ::memset(&visited[0], 0, vertices_nb);
+    bool *visited = new bool[vertices_nb];
+    ::memset(visited, 0, vertices_nb);
 
     for (int a = 0; a < vertices_nb; ++a)
       if (!visited[a])
 	sub_bfs(a, visited);
     std::cout << std::endl;
-  }
-
-  void dfs_it()
-  {
-    bool visited[vertices_nb];
-    ::memset(&visited[0], 0, vertices_nb);
-
-    for (int a = 0; a < vertices_nb; ++a)
-      if (!visited[a])
-	sub_dfs_it(a, visited);
-    std::cout << std::endl;
-  }
-
-  void dfs_rec()
-  {
-    bool visited[vertices_nb];
-    ::memset(&visited[0], 0, vertices_nb);
-
-    for (int a = 0; a < vertices_nb; ++a)
-      if (!visited[a])
-	sub_dfs_rec(a, visited);
-    std::cout << std::endl;
-  }
-
-private:
-  void sub_dfs_rec(int elem, bool *visited)
-  {
-    std::cout << elem << " ";
-    visited[elem] = true;
-    for (auto i : adj[elem])
-      if (!visited[i.first])
-	sub_dfs_rec(i.first, visited);
+    delete[] visited;
   }
 
   void sub_bfs(int start, bool *visited)
@@ -93,6 +210,17 @@ private:
       }
   }
 
+  void dfs_it()
+  {
+    bool visited[vertices_nb];
+    ::memset(&visited[0], 0, vertices_nb);
+
+    for (int a = 0; a < vertices_nb; ++a)
+      if (!visited[a])
+	sub_dfs_it(a, visited);
+    std::cout << std::endl;
+  }
+
   void sub_dfs_it(int start, bool *visited)
   {
     std::stack<int> s;
@@ -114,14 +242,37 @@ private:
       }
   }
 
+  void dfs_rec()
+  {
+    bool visited[vertices_nb];
+    ::memset(&visited[0], 0, vertices_nb);
+
+    for (int a = 0; a < vertices_nb; ++a)
+      if (!visited[a])
+	sub_dfs_rec(a, visited);
+    std::cout << std::endl;
+  }
+
+  void sub_dfs_rec(int elem, bool *visited)
+  {
+    std::cout << elem << " ";
+    visited[elem] = true;
+    for (auto i : adj[elem])
+      if (!visited[i.first])
+	sub_dfs_rec(i.first, visited);
+  }
+
+private:
   int vertices_nb;
   std::list<std::pair<int, int> > *adj;
 };
 
 int main(void)
 {
+  // number of edges given at construction
   Graph g(9);
 
+  // an undirected graph example
   g.buildEdge(0, 1, 4);
   g.buildEdge(0, 7, 8);
   g.buildEdge(1, 7, 11);
@@ -137,11 +288,28 @@ int main(void)
   g.buildEdge(6, 7, 1);
   g.buildEdge(7, 8, 7);
 
+  /* // a DAG example - uncomment the second .push_back() in buildEdge()
+  g.buildEdge(5, 2, 0);
+  g.buildEdge(5, 0, 0);
+  g.buildEdge(4, 0, 0);
+  g.buildEdge(4, 1, 0);
+  g.buildEdge(2, 3, 0);
+  g.buildEdge(3, 1, 0);
+  */
+
   g.dfs_rec();
 
   g.dfs_it();
 
   g.bfs();
+
+  g.dijkstra();
+
+  g.dijkstra(3, 6);
+
+  // on a DAG only
+  //g.topological_sort_rec();
+  //g.topological_sort_it();
 
   return 0;
 }
