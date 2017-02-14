@@ -8,6 +8,7 @@
 #include <iostream>
 #include <bitset>
 #include <utility>
+#include <limits.h>
 
 class Graph
 {
@@ -26,7 +27,58 @@ public:
   {
     adj[vertex1].push_back(std::make_pair(vertex2, weight));
     // comment next line if a DAG is desired
-    adj[vertex2].push_back(std::make_pair(vertex1, weight));
+    // adj[vertex2].push_back(std::make_pair(vertex1, weight));
+  }
+
+  void bellman_ford(int start = 0)
+  {
+    int *dist = new int[vertices_nb];
+    int *parent = new int[vertices_nb];
+
+    for (int i = 0; i < vertices_nb; ++i)
+      {
+	dist[i] = INT_MAX;
+	parent[i] = -1;
+      }
+    dist[start] = 0;
+
+    for (int loop = 0; loop < vertices_nb - 1; ++loop)
+      for (int source = 0; source < vertices_nb; ++source)
+	for (std::pair<int, int> edge : adj[source])
+	  {
+	    int destination = edge.first;
+	    int weight = edge.second;
+	    if (dist[source] != INT_MAX && dist[destination] > dist[source] + weight)
+	      {
+		dist[destination] = dist[source] + weight;
+		parent[destination] = source;
+	      }
+	  }
+
+    for (int source = 0; source < vertices_nb; ++source)
+      for (std::pair<int, int> edge : adj[source])
+	{
+	  int destination = edge.first;
+	  int weight = edge.second;
+	  if (dist[source] != INT_MAX && dist[destination] > dist[source] + weight)
+	    {
+	      std::cout << "graph contains a negative weight cycle" << std::endl;
+	      return ;
+	    }
+	}
+
+    // print results
+    std::cout << "Vertex\tDistance\tPath" << std::endl;
+    for (int i = 0; i < vertices_nb; ++i)
+      {
+	std::cout << i << "\t" << dist[i] << "\t\t";
+	for (int j = i; parent[j] != -1; j = parent[j])
+	  std::cout << parent[j] << " ";
+	std::cout << std::endl;
+      }
+
+    delete dist;
+    delete parent;
   }
 
   void dijkstra(int start = 0, int target = -1)
@@ -71,7 +123,7 @@ public:
 
     if (target == -1)
       {
-	std::cout << "Node\tDistance\t\tPath" << std::endl;
+	std::cout << "Node\tDistance\tPath" << std::endl;
 	for (int a = 0; a < vertices_nb; ++a)
 	  {
 	    std::cout << a << "\t" << dist[a] << "\t\t";
@@ -121,7 +173,8 @@ public:
 
     while (!no_inc_edges.empty())
       sub_topological_sort_it(no_inc_edges, inc_edges, q);
-  
+
+    // print results
     while (!q.empty())
       {
 	std::cout << q.front() << " ";
@@ -155,6 +208,7 @@ public:
       if (!visited[a])
 	sub_topological_sort_rec(a, visited, s);
 
+    // print results
     while (!s.empty())
       {
 	std::cout << s.top() << " ";
@@ -269,10 +323,10 @@ private:
 
 int main(void)
 {
-  // number of edges given at construction
-  Graph g(9);
+  // number of vertices given at construction
+  Graph g(5);
 
-  // an undirected graph example
+  /*// an undirected graph example - uncomment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, 4);
   g.buildEdge(0, 7, 8);
   g.buildEdge(1, 7, 11);
@@ -286,9 +340,36 @@ int main(void)
   g.buildEdge(5, 6, 2);
   g.buildEdge(6, 8, 6);
   g.buildEdge(6, 7, 1);
-  g.buildEdge(7, 8, 7);
+  g.buildEdge(7, 8, 7);*/
 
-  /* // a DAG example - uncomment the second .push_back() in buildEdge()
+  /*  // a directed graph example - comment the second .push_back() in buildEdge()
+  g.buildEdge(0, 1, -1);
+  g.buildEdge(0, 2, 4);
+  g.buildEdge(1, 2, 3);
+  g.buildEdge(1, 3, 2);
+  g.buildEdge(1, 4, 2);
+  g.buildEdge(3, 1, 1);
+  g.buildEdge(3, 2, 5);
+  g.buildEdge(4, 3, -4);
+  */
+
+  // another directed graph example
+  g.buildEdge(0, 1, 4);
+  g.buildEdge(0, 2, 5);
+  g.buildEdge(0, 3, 8);
+  g.buildEdge(1, 2, -3);
+  g.buildEdge(2, 4, 4);
+  g.buildEdge(4, 3, 1);
+  g.buildEdge(3, 4, 2);
+
+  /*  // a directed graph with a negative cycle example
+  g.buildEdge(0, 1, 1);
+  g.buildEdge(1, 2, 3);
+  g.buildEdge(2, 3, 2);
+  g.buildEdge(3, 1, -6);
+  */
+
+  /* // a DAG example
   g.buildEdge(5, 2, 0);
   g.buildEdge(5, 0, 0);
   g.buildEdge(4, 0, 0);
@@ -299,17 +380,19 @@ int main(void)
 
   g.dfs_rec();
 
-  g.dfs_it();
+  //g.dfs_it();
 
   g.bfs();
 
-  g.dijkstra();
+  //g.dijkstra();
 
-  g.dijkstra(3, 6);
+  //g.dijkstra(3, 6);
 
   // on a DAG only
   //g.topological_sort_rec();
   //g.topological_sort_it();
+
+  g.bellman_ford();
 
   return 0;
 }
