@@ -32,6 +32,8 @@ int is_substring(std::string pattern, std::string text)
 
   for (unsigned long a = 0; a < text.size(); ++a)
     {
+      if (a + pattern.size() - 1 >= text.size())
+	break ;
       text_hvalue = calc_text_hash(text_hvalue, text, a, pattern.size());
       if (text_hvalue == pattern_hvalue && text.substr(a, pattern.size()) == pattern)
 	return a;
