@@ -74,6 +74,11 @@ public:
 	      }
 	  }
 
+    // negative cycles detection
+    for (int a = 0; a < vertices_nb; ++a)
+      if (dist[a][a] < 0)
+	std::cout << "negative cycle detected !" << std::endl;
+
     // print and delete
     for (int a = 0; a < vertices_nb; ++a)
       {
