@@ -26,9 +26,74 @@ public:
   void buildEdge(int vertex1, int vertex2, int weight)
   {
     adj[vertex1].push_back(std::make_pair(vertex2, weight));
-    // comment next line if a DAG is desired
+    // comment next line if a directed graph is desired
     // adj[vertex2].push_back(std::make_pair(vertex1, weight));
   }
+
+  void floyd_warshall()
+  {
+    // to convert our adjacency list into an adjacency matrix
+    int **graph = new int *[vertices_nb];
+    // to keep track of the shortest distances between each node
+    int **dist = new int *[vertices_nb];
+    // to keep track of the parent of each node
+    int **parent = new int *[vertices_nb];
+
+    // init loop
+    for (int a = 0; a < vertices_nb; ++a)
+      {
+	graph[a] = new int[vertices_nb];
+	for (int b = 0; b < vertices_nb; ++b)
+	  {
+	    if (a == b)
+	      graph[a][b] = 0;
+	    else
+	      graph[a][b] = INT_MAX;
+	  }
+	for (std::pair<int, int> edge : adj[a])
+	  graph[a][edge.first] = edge.second;
+
+	dist[a] = new int[vertices_nb];
+	parent[a] = new int[vertices_nb];
+	for (int b = 0; b < vertices_nb; ++b)
+	  {
+	    dist[a][b] = graph[a][b];
+	    parent[a][b] = -1;
+	  }
+      }
+
+    for (int k = 0; k < vertices_nb; ++k)
+      for (int i = 0; i < vertices_nb; ++i)
+	for (int j = 0; j < vertices_nb; ++j)
+	  {
+	    if (dist[i][k] != INT_MAX && dist[k][j] != INT_MAX
+		&& dist[i][j] > dist[i][k] + dist[k][j])
+	      {
+		dist[i][j] = dist[i][k] + dist[k][j];
+		parent[i][j] = k;
+	      }
+	  }
+
+    // print and delete
+    for (int a = 0; a < vertices_nb; ++a)
+      {
+	for (int b = 0; b < vertices_nb; ++b)
+	  {
+	    std::cout << "Shortest distance between " << a << " and " << b << ": " << dist[a][b] << std::endl;
+	    std::cout << "Path: ";
+	    for (int c = b; c != -1; c = parent[a][c])
+	      std::cout << c << " ";
+	    std::cout << std::endl << std::endl;
+	  }
+
+	delete[] parent[a];
+	delete[] graph[a];
+	delete[] dist[a];
+      }
+    delete[] parent;
+    delete[] graph;
+    delete[] dist;
+    }
 
   void bellman_ford(int start = 0)
   {
@@ -77,8 +142,8 @@ public:
 	std::cout << std::endl;
       }
 
-    delete dist;
-    delete parent;
+    delete[] dist;
+    delete[] parent;
   }
 
   void dijkstra(int start = 0, int target = -1)
@@ -324,7 +389,7 @@ private:
 int main(void)
 {
   // number of vertices given at construction
-  Graph g(5);
+  Graph g(4);
 
   /*// an undirected graph example - uncomment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, 4);
@@ -353,7 +418,7 @@ int main(void)
   g.buildEdge(4, 3, -4);
   */
 
-  // another directed graph example
+  /* // another directed graph example
   g.buildEdge(0, 1, 4);
   g.buildEdge(0, 2, 5);
   g.buildEdge(0, 3, 8);
@@ -361,13 +426,14 @@ int main(void)
   g.buildEdge(2, 4, 4);
   g.buildEdge(4, 3, 1);
   g.buildEdge(3, 4, 2);
+  */
 
-  /*  // a directed graph with a negative cycle example
-  g.buildEdge(0, 1, 1);
+   // a directed graph with a negative cycle example
+  g.buildEdge(0, 2, -2);
+  g.buildEdge(1, 0, 4);
   g.buildEdge(1, 2, 3);
   g.buildEdge(2, 3, 2);
-  g.buildEdge(3, 1, -6);
-  */
+  g.buildEdge(3, 1, -1);
 
   /* // a DAG example
   g.buildEdge(5, 2, 0);
@@ -385,14 +451,15 @@ int main(void)
   g.bfs();
 
   //g.dijkstra();
-
   //g.dijkstra(3, 6);
 
   // on a DAG only
   //g.topological_sort_rec();
   //g.topological_sort_it();
 
-  g.bellman_ford();
+  //g.bellman_ford();
+
+  g.floyd_warshall();
 
   return 0;
 }
