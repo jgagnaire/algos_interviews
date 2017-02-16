@@ -58,7 +58,10 @@ public:
 	for (int b = 0; b < vertices_nb; ++b)
 	  {
 	    dist[a][b] = graph[a][b];
-	    parent[a][b] = -1;
+	    if (dist[a][b] != INT_MAX && a != b)
+	      parent[a][b] = a;
+	    else
+	      parent[a][b] = -1;
 	  }
       }
 
@@ -70,7 +73,7 @@ public:
 		&& dist[i][j] > dist[i][k] + dist[k][j])
 	      {
 		dist[i][j] = dist[i][k] + dist[k][j];
-		parent[i][j] = k;
+		parent[i][j] = parent[k][j];
 	      }
 	  }
 
