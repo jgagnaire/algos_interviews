@@ -27,7 +27,58 @@ public:
   {
     adj[vertex1].push_back(std::make_pair(vertex2, weight));
     // comment next line if a directed graph is desired
-    // adj[vertex2].push_back(std::make_pair(vertex1, weight));
+    adj[vertex2].push_back(std::make_pair(vertex1, weight));
+  }
+
+  void primMST()
+  {
+    int *parent = new int[vertices_nb];
+    int *weights = new int[vertices_nb];
+    bool *inMST = new bool[vertices_nb];
+    std::priority_queue<std::pair<int, int>,
+			std::vector<std::pair<int, int> >,
+			std::greater<std::pair<int, int> > > pq;
+
+    for (int a = 0; a < vertices_nb; ++a)
+      {
+	weights[a] = INT_MAX;
+	inMST[a] = false;
+	parent[a] = -1;
+      }
+
+    // pair: weight, vertex
+    pq.push(std::make_pair(0, 0));
+    weights[0] = 0;
+
+    while (!pq.empty())
+      {
+	int current = pq.top().second;
+	pq.pop();
+
+	inMST[current] = true;
+
+	for (std::pair<int, int> e : adj[current])
+	  {
+	    int v = e.first;
+	    int weight = e.second;
+
+	    if (!inMST[v] && weights[v] > weight)
+	      {
+		weights[v] = weight;
+		pq.push(std::make_pair(weights[v], v));
+		parent[v] = current;
+	      }
+	  }
+      }
+
+    // print and delete
+    std::cout << "minimum spanning tree:" << std::endl;
+    for (int a = 0; a < vertices_nb; ++a)
+      std::cout << parent[a] << " - " << a << std::endl;
+
+    delete parent;
+    delete weights;
+    delete inMST;
   }
 
   void floyd_warshall()
@@ -397,9 +448,9 @@ private:
 int main(void)
 {
   // number of vertices given at construction
-  Graph g(4);
+  Graph g(9);
 
-  /*// an undirected graph example - uncomment the second .push_back() in buildEdge()
+  // an undirected graph example - uncomment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, 4);
   g.buildEdge(0, 7, 8);
   g.buildEdge(1, 7, 11);
@@ -413,7 +464,7 @@ int main(void)
   g.buildEdge(5, 6, 2);
   g.buildEdge(6, 8, 6);
   g.buildEdge(6, 7, 1);
-  g.buildEdge(7, 8, 7);*/
+  g.buildEdge(7, 8, 7);
 
   /*  // a directed graph example - comment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, -1);
@@ -436,12 +487,13 @@ int main(void)
   g.buildEdge(3, 4, 2);
   */
 
-   // a directed graph with a negative cycle example
+  /* // a directed graph with a negative cycle example
   g.buildEdge(0, 2, -2);
   g.buildEdge(1, 0, 4);
   g.buildEdge(1, 2, 3);
   g.buildEdge(2, 3, 2);
   g.buildEdge(3, 1, -1);
+  */
 
   /* // a DAG example
   g.buildEdge(5, 2, 0);
@@ -467,7 +519,9 @@ int main(void)
 
   //g.bellman_ford();
 
-  g.floyd_warshall();
+  //g.floyd_warshall();
+
+  g.primMST();
 
   return 0;
 }
