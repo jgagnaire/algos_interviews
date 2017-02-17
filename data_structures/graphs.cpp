@@ -33,7 +33,7 @@ public:
   void primMST()
   {
     int *parent = new int[vertices_nb];
-    int *weights = new int[vertices_nb];
+    int *dist = new int[vertices_nb];
     bool *inMST = new bool[vertices_nb];
     std::priority_queue<std::pair<int, int>,
 			std::vector<std::pair<int, int> >,
@@ -41,15 +41,14 @@ public:
 
     for (int a = 0; a < vertices_nb; ++a)
       {
-	weights[a] = INT_MAX;
-	inMST[a] = false;
 	parent[a] = -1;
+	inMST[a] = false;
+	dist[a] = INT_MAX;
       }
 
-    // pair: weight, vertex
-    pq.push(std::make_pair(0, 0));
-    weights[0] = 0;
+    dist[0] = 0;
 
+    pq.push(std::make_pair(dist[0], 0));
     while (!pq.empty())
       {
 	int current = pq.top().second;
@@ -60,24 +59,21 @@ public:
 	for (std::pair<int, int> e : adj[current])
 	  {
 	    int v = e.first;
-	    int weight = e.second;
+	    int dist_v = e.second;
 
-	    if (!inMST[v] && weights[v] > weight)
+	    if (!inMST[v] && dist[v] > dist_v)
 	      {
-		weights[v] = weight;
-		pq.push(std::make_pair(weights[v], v));
+		dist[v] = dist_v;
 		parent[v] = current;
+		pq.push(std::make_pair(dist[v], v));
 	      }
 	  }
       }
-
-    // print and delete
-    std::cout << "minimum spanning tree:" << std::endl;
+    std::cout << "MST:" << std::endl;
     for (int a = 0; a < vertices_nb; ++a)
       std::cout << parent[a] << " - " << a << std::endl;
-
     delete parent;
-    delete weights;
+    delete dist;
     delete inMST;
   }
 
@@ -381,7 +377,7 @@ public:
 	    visited[current] = true;
 	    std::cout << current << " ";
 
-	    for (auto e : adj[current])
+	    for (std::pair<int, int> e : adj[current])
 	      if (!visited[e.first])
 		q.push(e.first);
 	  }
@@ -414,7 +410,7 @@ public:
 	    visited[current] = true;
 	    std::cout << current << " ";
 
-	    for (auto e : adj[current])
+	    for (std::pair<int, int> e : adj[current])
 	      s.push(e.first);
 	  }
       }
@@ -435,9 +431,9 @@ public:
   {
     std::cout << elem << " ";
     visited[elem] = true;
-    for (auto i : adj[elem])
-      if (!visited[i.first])
-	sub_dfs_rec(i.first, visited);
+    for (std::pair<int, int> edge : adj[elem])
+      if (!visited[edge.first])
+	sub_dfs_rec(edge.first, visited);
   }
 
 private:
