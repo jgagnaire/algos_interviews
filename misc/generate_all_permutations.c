@@ -1,8 +1,14 @@
 
+void	swap(char *a, char *b)
+{
+  char tmp = *a;
+  *a = *b;
+  *b = tmp;
+}
+
 void	permutations(char *input, int start, int length)
 {
   int	i;
-  char	tmp;
 
   if (start == length - 1)
     {
@@ -13,16 +19,9 @@ void	permutations(char *input, int start, int length)
   i = start;
   while (i < length)
     {
-      tmp = input[start];
-      input[start] = input[i];
-      input[i] = tmp;
-
+      swap(&input[start], &input[i]);
       permutations(input, start + 1, length);
-
-      tmp = input[start];
-      input[start] = input[i];
-      input[i] = tmp;
-
+      swap(&input[start], &input[i]);
       ++i;
     }
 }

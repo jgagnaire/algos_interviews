@@ -148,7 +148,7 @@ public:
     delete[] parent;
     delete[] graph;
     delete[] dist;
-    }
+  }
 
   void bellman_ford(int start = 0)
   {
