@@ -1,4 +1,3 @@
-
 #include <cstring>
 #include <list>
 #include <queue>
@@ -32,247 +31,226 @@ public:
 
   void primMST()
   {
-    int *parent = new int[vertices_nb];
-    int *dist = new int[vertices_nb];
-    bool *inMST = new bool[vertices_nb];
     std::priority_queue<std::pair<int, int>,
 			std::vector<std::pair<int, int> >,
 			std::greater<std::pair<int, int> > > pq;
+    int *dist = new int[vertices_nb];
+    int *parent = new int[vertices_nb];
+    bool *inMST = new bool[vertices_nb];
 
     for (int a = 0; a < vertices_nb; ++a)
       {
+	dist[a] = INT_MAX;
 	parent[a] = -1;
 	inMST[a] = false;
-	dist[a] = INT_MAX;
       }
 
     dist[0] = 0;
-
     pq.push(std::make_pair(dist[0], 0));
+
     while (!pq.empty())
       {
-	int current = pq.top().second;
+	int u = pq.top().second;
 	pq.pop();
 
-	inMST[current] = true;
+	inMST[u] = true;
 
-	for (std::pair<int, int> e : adj[current])
+	for (std::pair<int, int> e : adj[u])
 	  {
-	    int v = e.first;
-	    int dist_v = e.second;
-
-	    if (!inMST[v] && dist[v] > dist_v)
+	    if (!inMST[e.first] && dist[e.first] > e.second)
 	      {
-		dist[v] = dist_v;
-		parent[v] = current;
-		pq.push(std::make_pair(dist[v], v));
+		dist[e.first] = e.second;
+		parent[e.first] = u;
+		pq.push(std::make_pair(dist[e.first], e.first));
 	      }
 	  }
       }
-    std::cout << "MST:" << std::endl;
-    for (int a = 0; a < vertices_nb; ++a)
-      std::cout << parent[a] << " - " << a << std::endl;
-    delete parent;
-    delete dist;
-    delete inMST;
+
+    std::cout << "Minimum spanning tree:" << std::endl;
+    for (int i = 1; i < vertices_nb; ++i)
+      std::cout << parent[i] << " - " << i << std::endl;
+
+    delete[] inMST;
+    delete[] dist;
+    delete[] parent;
   }
 
   void floyd_warshall()
   {
-    // to convert our adjacency list into an adjacency matrix
-    int **graph = new int *[vertices_nb];
-    // to keep track of the shortest distances between each node
     int **dist = new int *[vertices_nb];
-    // to keep track of the parent of each node
     int **parent = new int *[vertices_nb];
 
-    // init loop
     for (int a = 0; a < vertices_nb; ++a)
       {
-	graph[a] = new int[vertices_nb];
+	dist[a] = new int[vertices_nb];
+	parent[a] = new int[vertices_nb];
+
 	for (int b = 0; b < vertices_nb; ++b)
 	  {
 	    if (a == b)
-	      graph[a][b] = 0;
+	      dist[a][b] = 0;
 	    else
-	      graph[a][b] = INT_MAX;
+	      dist[a][b] = INT_MAX;
+	    parent[a][b] = -1;
 	  }
-	for (std::pair<int, int> edge : adj[a])
-	  graph[a][edge.first] = edge.second;
 
-	dist[a] = new int[vertices_nb];
-	parent[a] = new int[vertices_nb];
-	for (int b = 0; b < vertices_nb; ++b)
+	for (std::pair<int, int> e : adj[a])
 	  {
-	    dist[a][b] = graph[a][b];
-	    if (dist[a][b] != INT_MAX && a != b)
-	      parent[a][b] = a;
-	    else
-	      parent[a][b] = -1;
+	    dist[a][e.first] = e.second;
+	    parent[a][e.first] = a;
 	  }
       }
 
     for (int k = 0; k < vertices_nb; ++k)
       for (int i = 0; i < vertices_nb; ++i)
 	for (int j = 0; j < vertices_nb; ++j)
-	  {
-	    if (dist[i][k] != INT_MAX && dist[k][j] != INT_MAX
-		&& dist[i][j] > dist[i][k] + dist[k][j])
-	      {
-		dist[i][j] = dist[i][k] + dist[k][j];
-		parent[i][j] = parent[k][j];
-	      }
-	  }
+	  if (dist[i][k] != INT_MAX && dist[k][j] != INT_MAX
+	      && dist[i][j] > dist[i][k] + dist[k][j])
+	    {
+	      dist[i][j] = dist[i][k] + dist[k][j];
+	      parent[i][j] = parent[k][j];
+	    }
 
-    // negative cycles detection
     for (int a = 0; a < vertices_nb; ++a)
-      if (dist[a][a] < 0)
-	std::cout << "negative cycle detected !" << std::endl;
+      if (dist[a][a] != 0)
+	{
+	  std::cout << "negative cycle detected!" << std::endl;
+	  return ;
+	}
 
-    // print and delete
     for (int a = 0; a < vertices_nb; ++a)
       {
 	for (int b = 0; b < vertices_nb; ++b)
 	  {
-	    std::cout << "Shortest distance between " << a << " and " << b << ": " << dist[a][b] << std::endl;
-	    std::cout << "Path: ";
-	    for (int c = b; c != -1; c = parent[a][c])
-	      std::cout << c << " ";
-	    std::cout << std::endl << std::endl;
-	  }
+	    std::cout << "edge " << a << " - " << b << ", distance " << dist[a][b] << ", path:";
 
-	delete[] parent[a];
-	delete[] graph[a];
+	    int c = b;
+	    while (c != -1)
+	      {
+		std::cout << c << " ";
+		c = parent[a][c];
+	      }
+	    std::cout << std::endl;
+	  }
 	delete[] dist[a];
+	delete[] parent[a];
       }
-    delete[] parent;
-    delete[] graph;
+
     delete[] dist;
+    delete[] parent;
   }
 
   void bellman_ford(int start = 0)
   {
-    int *dist = new int[vertices_nb];
     int *parent = new int[vertices_nb];
+    int *dist = new int[vertices_nb];
 
-    for (int i = 0; i < vertices_nb; ++i)
+    for (int a = 0; a < vertices_nb; ++a)
       {
-	dist[i] = INT_MAX;
-	parent[i] = -1;
+	parent[a] = -1;
+	dist[a] = INT_MAX;
       }
+
     dist[start] = 0;
 
-    for (int loop = 0; loop < vertices_nb - 1; ++loop)
-      for (int source = 0; source < vertices_nb; ++source)
-	for (std::pair<int, int> edge : adj[source])
+    for (int a = 0; a < vertices_nb - 1; ++a)
+      for (int u = 0; u < vertices_nb; ++u)
+	for (std::pair<int, int> edge : adj[u])
 	  {
-	    int destination = edge.first;
-	    int weight = edge.second;
-	    if (dist[source] != INT_MAX && dist[destination] > dist[source] + weight)
+	    if (dist[u] != INT_MAX && dist[edge.first] > dist[u] + edge.second)
 	      {
-		dist[destination] = dist[source] + weight;
-		parent[destination] = source;
+		dist[edge.first] = dist[u] + edge.second;
+		parent[edge.first] = u;
 	      }
 	  }
-
-    for (int source = 0; source < vertices_nb; ++source)
-      for (std::pair<int, int> edge : adj[source])
+    for (int u = 0; u < vertices_nb; ++u)
+      for (std::pair<int, int> edge : adj[u])
 	{
-	  int destination = edge.first;
-	  int weight = edge.second;
-	  if (dist[source] != INT_MAX && dist[destination] > dist[source] + weight)
+	  if (dist[u] != INT_MAX && dist[edge.first] > dist[u] + edge.second)
 	    {
-	      std::cout << "graph contains a negative weight cycle" << std::endl;
+	      std::cout << "negative cycle detected!" << std::endl;
 	      return ;
 	    }
 	}
 
-    // print results
     std::cout << "Vertex\tDistance\tPath" << std::endl;
-    for (int i = 0; i < vertices_nb; ++i)
+    for (int a = 0; a < vertices_nb; ++a)
       {
-	std::cout << i << "\t" << dist[i] << "\t\t";
-	for (int j = i; parent[j] != -1; j = parent[j])
-	  std::cout << parent[j] << " ";
+	std::cout << a << "\t" << dist[a] << "\t\t";
+	int b = a;
+	while (b != -1)
+	  {
+	    std::cout << b << " ";
+	    b = parent[b];
+	  }
 	std::cout << std::endl;
       }
 
-    delete[] dist;
     delete[] parent;
+    delete[] dist;
   }
 
   void dijkstra(int start = 0, int target = -1)
   {
-    std::priority_queue<std::pair<unsigned, int>,
-			std::vector<std::pair<unsigned, int> >,
-			std::greater<std::pair<unsigned, int> > > pq;
-
-    unsigned *dist = new unsigned[vertices_nb];
+    std::priority_queue<std::pair<int, int>,
+			std::vector<std::pair<int, int> >,
+			std::greater<std::pair<int, int> > > pq;
     int *parent = new int[vertices_nb];
-
-    dist[start] = 0;
+    int *dist = new int[vertices_nb];
 
     for (int a = 0; a < vertices_nb; ++a)
       {
-	if (a != start)
-	  dist[a] = -1;
 	parent[a] = -1;
-	pq.push(std::make_pair(dist[a], a));
+	dist[a] = INT_MAX;
       }
+
+    dist[start] = 0;
+    pq.push(std::make_pair(dist[start], start));
+
     while (!pq.empty())
       {
-	std::pair<unsigned, int> current = pq.top();
-	if (current.second == target)
+	int u = pq.top().second;
+	if (u == target)
 	  break ;
 	pq.pop();
 
-	for (std::pair<int, int> e : adj[current.second])
+	for (std::pair<int, int> edge : adj[u])
 	  {
-	    int weight = e.second;
-	    if (dist[e.first] > dist[current.second] + weight)
+	    if (dist[edge.first] > dist[u] + edge.second)
 	      {
-		dist[e.first] = dist[current.second] + weight;
-		parent[e.first] = current.second;
-		pq.push(std::make_pair(dist[e.first], e.first));
+		dist[edge.first] = dist[u] + edge.second;
+		parent[edge.first] = u;
+		pq.push(std::make_pair(dist[edge.first], edge.first));
 	      }
 	  }
       }
 
-    // print results
-    std::stack<int> s;
-
+    std::cout << "Vertex\tDistance\tPath" << std::endl;
     if (target == -1)
       {
-	std::cout << "Node\tDistance\tPath" << std::endl;
 	for (int a = 0; a < vertices_nb; ++a)
 	  {
 	    std::cout << a << "\t" << dist[a] << "\t\t";
-	    for (int j = a; parent[j] != -1; j = parent[j])
-	      s.push(parent[j]);
-	    while (!s.empty())
+	    int i = a;
+	    while (i != -1)
 	      {
-		std::cout << s.top() << " ";
-		s.pop();
+		std::cout << i << " ";
+		i = parent[i];
 	      }
 	    std::cout << std::endl;
 	  }
       }
     else
       {
-	std::cout << target << "\t" << dist[target] << "\t\t";
-	while (parent[target] != -1)
+	std::cout << "start: " << start << ", target: " << target << ", path: ";
+	while (target != -1)
 	  {
-	    s.push(parent[target]);
+	    std::cout << target << " ";
 	    target = parent[target];
 	  }
-	while (!s.empty())
-	  {
-	    std::cout << s.top() << " ";
-	    s.pop();
-	  }
+	std::cout << std::endl;
       }
 
-    std::cout << std::endl;
     delete[] dist;
     delete[] parent;
   }
@@ -449,8 +427,8 @@ int main(void)
   // an undirected graph example - uncomment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, 4);
   g.buildEdge(0, 7, 8);
-  g.buildEdge(1, 7, 11);
   g.buildEdge(1, 2, 8);
+  g.buildEdge(1, 7, 11);
   g.buildEdge(2, 3, 7);
   g.buildEdge(2, 8, 2);
   g.buildEdge(2, 5, 4);
@@ -458,11 +436,11 @@ int main(void)
   g.buildEdge(3, 5, 14);
   g.buildEdge(4, 5, 10);
   g.buildEdge(5, 6, 2);
-  g.buildEdge(6, 8, 6);
   g.buildEdge(6, 7, 1);
+  g.buildEdge(6, 8, 6);
   g.buildEdge(7, 8, 7);
 
-  /*  // a directed graph example - comment the second .push_back() in buildEdge()
+  /* // a directed graph example - comment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, -1);
   g.buildEdge(0, 2, 4);
   g.buildEdge(1, 2, 3);
@@ -470,7 +448,7 @@ int main(void)
   g.buildEdge(1, 4, 2);
   g.buildEdge(3, 1, 1);
   g.buildEdge(3, 2, 5);
-  g.buildEdge(4, 3, -4);
+  g.buildEdge(4, 3, -3);
   */
 
   /* // another directed graph example
