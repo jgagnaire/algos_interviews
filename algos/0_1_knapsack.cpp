@@ -2,22 +2,23 @@
 
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
-/*
-// We use dynamic programming with a bottom-up approach + a matrix to improve this 2^n solution
 
-int knapsack(int remaining_available_weight, int *weights, int *values, int n)
+// Bruteforce solution, O(2^n)
+int knapsack_bruteforce(int W, int *weights, int *values, int n)
 {
-  if (remaining_available_weight == 0 || n == 0)
+  if (W == 0 || n == 0)
     return 0;
-  else if (weights[n - 1] > remaining_available_weight)
-    return knapsack(remaining_available_weight, weights, values, n - 1);
-  else
-    return MAX(values[n - 1] + knapsack(remaining_available_weight - weights[n - 1], weights, values, n - 1),
-	       knapsack(remaining_available_weight, weights, values, n - 1));
-}
-*/
 
-int knapsack(int W, int *weights, int *values, int n)
+  if (weights[n - 1] > W)
+    return knapsack_bruteforce(W, weights, values, n - 1);
+  else
+    return MAX(values[n - 1] + knapsack_bruteforce(W - weights[n - 1], weights, values, n - 1),
+	       knapsack_bruteforce(W, weights, values, n - 1));
+}
+
+
+// We use dynamic programming with a bottom-up approach + a matrix to improve the solution above
+int knapsack_dp(int W, int *weights, int *values, int n)
 {
   int K[n + 1][W + 1];
 
@@ -42,5 +43,5 @@ int main()
 
   int total_weight = 50;
 
-  std::cout << knapsack(total_weight, weights, values, 3) << std::endl;
+  std::cout << knapsack_dp(total_weight, weights, values, 3) << std::endl;
 }
