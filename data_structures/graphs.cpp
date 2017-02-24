@@ -26,7 +26,59 @@ public:
   {
     adj[vertex1].push_back(std::make_pair(vertex2, weight));
     // comment next line if a directed graph is desired
-    adj[vertex2].push_back(std::make_pair(vertex1, weight));
+    //    adj[vertex2].push_back(std::make_pair(vertex1, weight));
+  }
+
+  Graph transpose_graph()
+  {
+    Graph g(vertices_nb);
+
+    for (int a = 0; a < vertices_nb; ++a)
+      for (std::pair<int, int> edge : adj[a])
+	g.buildEdge(edge.first, a, edge.second);
+
+    return g;
+  }
+
+  void fill_topolike_order(int elem, std::stack<int> &s, bool *visited)
+  {
+    visited[elem] = true;
+    for (std::pair<int, int> edge : adj[elem])
+      if (!visited[edge.first])
+	fill_topolike_order(edge.first, s, visited);
+    s.push(elem);
+  }
+
+  void kosarajuSCC()
+  {
+    std::stack<int> s;
+    bool *visited = new bool[vertices_nb];
+
+    for (int a = 0; a < vertices_nb; ++a)
+      visited[a] = false;
+
+    for (int a = 0; a < vertices_nb; ++a)
+      if (!visited[a])
+	fill_topolike_order(a, s, visited);
+
+    Graph g = transpose_graph();
+
+    for (int a = 0; a < vertices_nb; ++a)
+      visited[a] = false;
+
+    std::cout << "Strongly connected components:" << std::endl;
+    while (!s.empty())
+      {
+	int u = s.top();
+	s.pop();
+	if (!visited[u])
+	  {
+	    g.sub_dfs_rec(u, visited);
+	    std::cout << std::endl;
+	  }
+      }
+
+    delete[] visited;
   }
 
   void primMST()
@@ -422,9 +474,9 @@ private:
 int main(void)
 {
   // number of vertices given at construction
-  Graph g(9);
+  Graph g(5);
 
-  // an undirected graph example - uncomment the second .push_back() in buildEdge()
+  /* // an undirected graph example - uncomment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, 4);
   g.buildEdge(0, 7, 8);
   g.buildEdge(1, 2, 8);
@@ -439,6 +491,7 @@ int main(void)
   g.buildEdge(6, 7, 1);
   g.buildEdge(6, 8, 6);
   g.buildEdge(7, 8, 7);
+  */
 
   /* // a directed graph example - comment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, -1);
@@ -451,15 +504,12 @@ int main(void)
   g.buildEdge(4, 3, -3);
   */
 
-  /* // another directed graph example
-  g.buildEdge(0, 1, 4);
+  // another directed graph example
+  g.buildEdge(1, 0, 4);
   g.buildEdge(0, 2, 5);
-  g.buildEdge(0, 3, 8);
-  g.buildEdge(1, 2, -3);
-  g.buildEdge(2, 4, 4);
-  g.buildEdge(4, 3, 1);
-  g.buildEdge(3, 4, 2);
-  */
+  g.buildEdge(2, 1, 8);
+  g.buildEdge(0, 3, -3);
+  g.buildEdge(3, 4, 4);
 
   /* // a directed graph with a negative cycle example
   g.buildEdge(0, 2, -2);
@@ -495,7 +545,10 @@ int main(void)
 
   //g.floyd_warshall();
 
-  g.primMST();
+  //g.primMST();
+
+  // on a directed graph only
+  g.kosarajuSCC();
 
   return 0;
 }
