@@ -26,7 +26,59 @@ public:
   {
     adj[vertex1].push_back(std::make_pair(vertex2, weight));
     // comment next line if a directed graph is desired
-    //    adj[vertex2].push_back(std::make_pair(vertex1, weight));
+    adj[vertex2].push_back(std::make_pair(vertex1, weight));
+  }
+
+  void is_bipartite()
+  {
+    bool *set1 = new bool[vertices_nb];
+    bool *set2 = new bool[vertices_nb];
+
+    for (int a = 0; a < vertices_nb; ++a)
+      {
+	set1[a] = false;
+	set2[a] = false;
+      }
+
+    // BFS
+    for (int a = 0; a < vertices_nb; ++a)
+      {
+	std::queue<int> q;
+
+	if (set1[a] || set2[a]) // already visited
+	  continue ;
+	set1[a] = true;
+	q.push(a);
+
+	while (!q.empty())
+	  {
+	    int u = q.front();
+	    q.pop();
+
+	    for (std::pair<int, int> edges : adj[u])
+	      {
+		if (!set1[edges.first] && !set2[edges.first]) // if not visited
+		  {
+		    if (set1[u])
+		      set2[edges.first] = true;
+		    else
+		      set1[edges.first] = true;
+		    q.push(edges.first);
+		  }
+		else if ((set1[edges.first] && set1[u]) || (set2[edges.first] && set2[u]))
+		  {
+		    std::cout << "Graph is not bipartite!" << std::endl;
+		    delete[] set1;
+		    delete[] set2;
+		    return ;
+		  }
+	      }
+	  }
+      }
+    std::cout << "Graph is bipartite!" << std::endl;
+
+    delete[] set1;
+    delete[] set2;
   }
 
   Graph transpose_graph()
@@ -167,6 +219,13 @@ public:
       if (dist[a][a] != 0)
 	{
 	  std::cout << "negative cycle detected!" << std::endl;
+	  for (int i = 0; i < vertices_nb; ++i)
+	    {
+	      delete[] dist[i];
+	      delete[] parent[i];
+	    }
+	  delete[] dist;
+	  delete[] parent;
 	  return ;
 	}
 
@@ -221,6 +280,8 @@ public:
 	  if (dist[u] != INT_MAX && dist[edge.first] > dist[u] + edge.second)
 	    {
 	      std::cout << "negative cycle detected!" << std::endl;
+	      delete[] dist;
+	      delete[] parent;
 	      return ;
 	    }
 	}
@@ -474,9 +535,9 @@ private:
 int main(void)
 {
   // number of vertices given at construction
-  Graph g(5);
+  Graph g(8);
 
-  /* // an undirected graph example - uncomment the second .push_back() in buildEdge()
+  /* // an undirected graph - uncomment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, 4);
   g.buildEdge(0, 7, 8);
   g.buildEdge(1, 2, 8);
@@ -493,7 +554,29 @@ int main(void)
   g.buildEdge(7, 8, 7);
   */
 
-  /* // a directed graph example - comment the second .push_back() in buildEdge()
+  // an undirected, connected and bipartite graph
+  g.buildEdge(0, 1, 0);
+  g.buildEdge(0, 3, 0);
+  g.buildEdge(0, 7, 0);
+  g.buildEdge(1, 6, 0);
+  g.buildEdge(1, 2, 0);
+  g.buildEdge(2, 5, 0);
+  g.buildEdge(2, 3, 0);
+  g.buildEdge(3, 4, 0);
+  g.buildEdge(4, 5, 0);
+  g.buildEdge(4, 7, 0);
+  g.buildEdge(5, 6, 0);
+  g.buildEdge(6, 7, 0);
+
+  /* // an undirected, connected, not bipartite graph
+  g.buildEdge(0, 1, 0);
+  g.buildEdge(1, 2, 0);
+  g.buildEdge(2, 3, 0);
+  g.buildEdge(3, 4, 0);
+  g.buildEdge(4, 2, 0);
+  */
+
+  /* // a directed graph - comment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, -1);
   g.buildEdge(0, 2, 4);
   g.buildEdge(1, 2, 3);
@@ -504,14 +587,15 @@ int main(void)
   g.buildEdge(4, 3, -3);
   */
 
-  // another directed graph example
+  /* // another directed graph
   g.buildEdge(1, 0, 4);
   g.buildEdge(0, 2, 5);
   g.buildEdge(2, 1, 8);
   g.buildEdge(0, 3, -3);
   g.buildEdge(3, 4, 4);
+  */
 
-  /* // a directed graph with a negative cycle example
+  /* // a directed graph with a negative cycle
   g.buildEdge(0, 2, -2);
   g.buildEdge(1, 0, 4);
   g.buildEdge(1, 2, 3);
@@ -548,7 +632,9 @@ int main(void)
   //g.primMST();
 
   // on a directed graph only
-  g.kosarajuSCC();
+  //g.kosarajuSCC();
+
+  g.is_bipartite();
 
   return 0;
 }
