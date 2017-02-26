@@ -1,7 +1,5 @@
+#include <algorithm>
 #include <iostream>
-
-#define MAX(x, y) ((x) > (y) ? (x) : (y))
-
 
 // Bruteforce solution, O(2^n)
 int knapsack_bruteforce(int W, int *weights, int *values, int n)
@@ -12,8 +10,8 @@ int knapsack_bruteforce(int W, int *weights, int *values, int n)
   if (weights[n - 1] > W)
     return knapsack_bruteforce(W, weights, values, n - 1);
   else
-    return MAX(values[n - 1] + knapsack_bruteforce(W - weights[n - 1], weights, values, n - 1),
-	       knapsack_bruteforce(W, weights, values, n - 1));
+    return std::max(values[n - 1] + knapsack_bruteforce(W - weights[n - 1], weights, values, n - 1),
+		    knapsack_bruteforce(W, weights, values, n - 1));
 }
 
 
@@ -30,8 +28,8 @@ int knapsack_dp(int W, int *weights, int *values, int n)
 	else if (weights[i - 1] > j)
 	  K[i][j] = K[i - 1][j];
 	else
-	  K[i][j] = MAX(values[i - 1] + K[i - 1][j - weights[i - 1]],
-			K[i - 1][j]);
+	  K[i][j] = std::max(values[i - 1] + K[i - 1][j - weights[i - 1]],
+			     K[i - 1][j]);
       }
   return K[n][W];
 }
