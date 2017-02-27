@@ -4,19 +4,18 @@
 #include <string>
 #include <iostream>
 
-// O(2^n) bruteforce
+// O(2^n) bruteforce solution
 int func(std::string const &s, int left, int right)
 {
   if (left == right)
     return 1;
-
-  if (right - left == 1 && s[left] == s[right])
+  if (left == right - 1 && s[left] == s[right])
     return 2;
 
   if (s[left] == s[right])
     return func(s, left + 1, right - 1) + 2;
 
-  return std::max(func(s, left, right - 1), func(s, left + 1, right));
+  return std::max(func(s, left + 1, right), func(s, left, right - 1));
 }
 
 int func_naive(std::string const &s)
@@ -28,23 +27,24 @@ int func_naive(std::string const &s)
 int func_dp(std::string const &s)
 {
   int n = s.size();
-  int K[n][n];
+  int L[n][n];
 
   for (int i = 0; i < n; ++i)
-    K[i][i] = 1;
+    L[i][i] = 1;
 
   for (int k = 2; k <= n; ++k)
     for (int i = 0; i < n - k + 1; ++i)
       {
 	int j = i + k - 1;
-	if (s[i] == s[j] && k == 2)
-	  K[i][j] = 2;
+
+	if (i == j - 1 && s[i] == s[j])
+	  L[i][j] = 2;
 	else if (s[i] == s[j])
-	  K[i][j] = K[i + 1][j - 1] + 2;
+	  L[i][j] = L[i + 1][j - 1] + 2;
 	else
-	  K[i][j] = std::max(K[i + 1][j], K[i][j - 1]);
+	  L[i][j] = std::max(L[i][j - 1], L[i + 1][j]);
       }
-  return K[0][n - 1];
+  return L[0][n - 1];
 }
 
 int main(int ac, char **av)
