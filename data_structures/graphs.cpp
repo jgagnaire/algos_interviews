@@ -118,6 +118,14 @@ public:
 	    int current = residual_graph.get_capacity_of_edge(u, v);
 	    int tmp = current - path_flow;
 	    residual_graph.set_capacity_of_edge(u, v, tmp);
+
+	    current = residual_graph.get_capacity_of_edge(v, u);
+	    // if edge v->u doesn't exist
+	    if (current == INT_MAX && tmp > 0)
+	      // we create it
+	      residual_graph.buildEdge(v, u, path_flow);
+	    else if (current != INT_MAX)
+	      residual_graph.set_capacity_of_edge(v, u, current + path_flow);
 	  }
 
 	max_flow += path_flow;
@@ -634,7 +642,7 @@ private:
 int main(void)
 {
   // number of vertices given at construction
-  Graph g(6);
+  Graph g(4);
 
   /* // an undirected graph - uncomment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, 4);
@@ -654,16 +662,11 @@ int main(void)
   */
 
   // a directed graph used for the maximum flow problem
-  g.buildEdge(0, 1, 16);
-  g.buildEdge(0, 2, 13);
-  g.buildEdge(1, 2, 10);
-  g.buildEdge(1, 3, 12);
-  g.buildEdge(2, 1, 4);
-  g.buildEdge(2, 4, 14);
-  g.buildEdge(3, 2, 9);
-  g.buildEdge(3, 5, 20);
-  g.buildEdge(4, 3, 7);
-  g.buildEdge(4, 5, 4);
+  g.buildEdge(0, 1, 3);
+  g.buildEdge(0, 2, 2);
+  g.buildEdge(1, 2, 5);
+  g.buildEdge(1, 3, 2);
+  g.buildEdge(2, 3, 3);
 
   /* // an undirected, connected and bipartite graph
   g.buildEdge(0, 1, 0);
@@ -748,7 +751,7 @@ int main(void)
 
   // g.is_bipartite();
 
-  g.ford_fulkerson(0, 5);
+  g.ford_fulkerson(0, 3);
 
   return 0;
 }
