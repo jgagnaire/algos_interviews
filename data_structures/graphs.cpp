@@ -118,14 +118,6 @@ public:
 	    int current = residual_graph.get_capacity_of_edge(u, v);
 	    int tmp = current - path_flow;
 	    residual_graph.set_capacity_of_edge(u, v, tmp);
-
-	    current = residual_graph.get_capacity_of_edge(v, u);
-	    // if edge v->u doesn't exist
-	    if (current == INT_MAX && tmp > 0)
-	      // we create it
-	      residual_graph.buildEdge(v, u, path_flow);
-	    else if (current != INT_MAX)
-	      residual_graph.set_capacity_of_edge(v, u, current + path_flow);
 	  }
 
 	max_flow += path_flow;
