@@ -6,13 +6,12 @@
 int unbounded_knapsack(int W, int *values, int *weights, int n)
 {
   int K[W + 1];
-  std::memset(K, 0, (W + 1) * sizeof(int));
+  std::memset(K, 0, sizeof(K));
 
   for (int i = 0; i <= W; ++i)
     for (int j = 0; j < n; ++j)
       if (weights[j] <= i)
-	  K[i] = std::max(K[i],
-			  values[j] + K[i - weights[j]]);
+	K[i] = std::max(K[i], values[j] + K[i - weights[j]]);
 
   return K[W];
 }
