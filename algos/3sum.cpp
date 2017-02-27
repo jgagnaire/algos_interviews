@@ -5,8 +5,10 @@
 
 #define LEN 10
 
-void func(std::vector<int> const &v)
+void func(std::vector<int> &v)
 {
+  std::sort(std::begin(v), std::end(v));
+
   for (unsigned long i = 0; i < v.size() - 2; ++i)
     {
       int a = v[i];
