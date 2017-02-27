@@ -26,7 +26,114 @@ public:
   {
     adj[vertex1].push_back(std::make_pair(vertex2, weight));
     // comment next line if a directed graph is desired
-    adj[vertex2].push_back(std::make_pair(vertex1, weight));
+    //adj[vertex2].push_back(std::make_pair(vertex1, weight));
+  }
+
+  Graph copy_graph()
+  {
+    Graph g(vertices_nb);
+
+    for (int a = 0; a < vertices_nb; ++a)
+      for (std::pair<int, int> edge : adj[a])
+	g.buildEdge(a, edge.first, edge.second);
+
+    return g;
+  }
+
+  int get_capacity_of_edge(int u, int v)
+  {
+    for (std::pair<int, int> edge : adj[u])
+      if (v == edge.first)
+	return edge.second;
+    return INT_MAX;
+  }
+
+  void set_capacity_of_edge(int u, int v, int capacity)
+  {
+    for (auto it = std::begin(adj[u]); it != std::end(adj[u]); ++it)
+      if (it->first == v)
+	{
+	  it->second = capacity;
+	  return ;
+	}
+  }
+
+  bool find_path_bfs(int start, int end, int *parent)
+  {
+    std::queue<int> q;
+    bool visited[vertices_nb];
+
+    for (int a = 0; a < vertices_nb; ++a)
+      visited[a] = false;
+
+    q.push(start);
+
+    while (!q.empty())
+      {
+	int u = q.front();
+	q.pop();
+
+	visited[u] = true;
+
+	if (u == end)
+	  break ;
+
+	for (std::pair<int, int> edge : adj[u])
+	  if (!visited[edge.first] && edge.second > 0)
+	    {
+	      parent[edge.first] = u;
+	      q.push(edge.first);
+	    }
+      }
+
+    return visited[end];
+  }
+
+  void ford_fulkerson(int s, int t)
+  {
+    // no flow at the beginning
+    int max_flow = 0;
+    // so residual graph is the same as the given graph
+    Graph residual_graph = copy_graph();
+
+    int *parent = new int[vertices_nb];
+
+    // while there is a path between s and t
+    while (residual_graph.find_path_bfs(s, t, parent))
+      {
+	// get the maximum residual capacity of the edges
+	// on the path found by the bfs
+	int path_flow = INT_MAX;
+	int u, v;
+	for (v = t; v != s; v = parent[v])
+	  {
+	    u = parent[v];
+	    path_flow = std::min(path_flow, residual_graph.get_capacity_of_edge(u, v));
+	  }
+
+	// update residual capacities on the path found by bfs
+	for (v = t; v != s; v = parent[v])
+	  {
+	    u = parent[v];
+	    int current = residual_graph.get_capacity_of_edge(u, v);
+	    int tmp = current - path_flow;
+	    residual_graph.set_capacity_of_edge(u, v, tmp);
+
+	    current = residual_graph.get_capacity_of_edge(v, u);
+	    // if edge v->u doesn't exist
+	    if (current == INT_MAX && tmp > 0)
+	      // we create it
+	      residual_graph.buildEdge(v, u, path_flow);
+	    else if (current != INT_MAX)
+	      residual_graph.set_capacity_of_edge(v, u, current + path_flow);
+	  }
+
+	max_flow += path_flow;
+      }
+
+    std::cout << "maximum flow: " << max_flow << std::endl;
+
+    delete[] parent;
   }
 
   void is_bipartite()
@@ -535,7 +642,7 @@ private:
 int main(void)
 {
   // number of vertices given at construction
-  Graph g(8);
+  Graph g(6);
 
   /* // an undirected graph - uncomment the second .push_back() in buildEdge()
   g.buildEdge(0, 1, 4);
@@ -554,7 +661,19 @@ int main(void)
   g.buildEdge(7, 8, 7);
   */
 
-  // an undirected, connected and bipartite graph
+  // a directed graph used for the maximum flow problem
+  g.buildEdge(0, 1, 16);
+  g.buildEdge(0, 2, 13);
+  g.buildEdge(1, 2, 10);
+  g.buildEdge(1, 3, 12);
+  g.buildEdge(2, 1, 4);
+  g.buildEdge(2, 4, 14);
+  g.buildEdge(3, 2, 9);
+  g.buildEdge(3, 5, 20);
+  g.buildEdge(4, 3, 7);
+  g.buildEdge(4, 5, 4);
+
+  /* // an undirected, connected and bipartite graph
   g.buildEdge(0, 1, 0);
   g.buildEdge(0, 3, 0);
   g.buildEdge(0, 7, 0);
@@ -567,6 +686,7 @@ int main(void)
   g.buildEdge(4, 7, 0);
   g.buildEdge(5, 6, 0);
   g.buildEdge(6, 7, 0);
+  */
 
   /* // an undirected, connected, not bipartite graph
   g.buildEdge(0, 1, 0);
@@ -634,7 +754,9 @@ int main(void)
   // on a directed graph only
   //g.kosarajuSCC();
 
-  g.is_bipartite();
+  // g.is_bipartite();
+
+  g.ford_fulkerson(0, 5);
 
   return 0;
 }
