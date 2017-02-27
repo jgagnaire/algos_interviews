@@ -219,14 +219,12 @@ bool is_bst(tree *root)
   return is_bst(root->left) && is_bst(root->right);
 }
 
-#define MAX(x, y) ((x) > (y) ? (x) : (y))
-
 int level_count(tree *root)
 {
   if (!root)
     return 0;
 
-  return MAX(level_count(root->left), level_count(root->right)) + 1;
+  return std::max(level_count(root->left), level_count(root->right)) + 1;
 }
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))

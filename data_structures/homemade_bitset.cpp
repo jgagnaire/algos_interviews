@@ -1,4 +1,4 @@
-#include <string.h>
+#include <cstring>
 #include <vector>
 #include <iostream>
 
@@ -8,7 +8,7 @@ public:
   Bitset(int size)
     : map(new char[size / sizeof(char)])
   {
-    ::memset(map, 0, size / sizeof(char));
+    std::memset(map, 0, size / sizeof(char));
   }
   ~Bitset() {}
 
