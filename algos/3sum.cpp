@@ -39,7 +39,6 @@ int	main()
   std::vector<int> tab;
   int	a;
 
-  srand(time(0));
   for (a = 0;a < LEN;++a)
     {
       tab.push_back(!(a % 2) ? (rand() % LEN) : -1 * (rand() % LEN));
